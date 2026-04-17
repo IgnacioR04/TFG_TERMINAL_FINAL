@@ -2,10 +2,8 @@ name: Actualizar terminal
 
 on:
   schedule:
-    # Cada 15 minutos. GitHub Actions no garantiza precision absoluta
-    # (puede retrasarse varios minutos bajo carga), pero es suficiente.
     - cron: '*/15 * * * *'
-  workflow_dispatch:  # Ejecucion manual desde la pestana Actions
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -27,7 +25,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
+          # cache: 'pip'   <-- ELIMINADO
 
       - name: Instalar dependencias
         run: |
