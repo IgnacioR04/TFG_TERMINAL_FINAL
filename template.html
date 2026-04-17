@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Terminal TFG · Ignacio Rodriguez</title>
+<script src="https://cdn.plot.ly/plotly-2.35.0.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root{
+  /* Fondos: Revolut usa negros frios con toque azulado muy sutil */
+  --bg0:#05060A;
+  --bg1:#0C0E14;
+  --bg2:#131620;
+  --bg3:#1C2030;
+  --bg4:#262B3E;
+  --border:#1E2230;
+  --border2:#2A2F42;
+  --border3:#353B52;
+
+  /* Texto */
+  --text:#F2F3F7;
+  --text2:#9CA0B3;
+  --text3:#5A5F74;
+  --text4:#3D4158;
+
+  /* Acentos: verde Revolut + un set medido */
+  --neon:#00D084;
+  --neon-soft:rgba(0,208,132,.12);
+  --neon-glow:rgba(0,208,132,.35);
+  --red:#FF5A5F;
+  --red-soft:rgba(255,90,95,.1);
+  --blue:#5B8DEF;
+  --blue-soft:rgba(91,141,239,.12);
+  --amber:#FFB847;
+  --amber-soft:rgba(255,184,71,.1);
+  --purple:#9B8AFB;
+  --teal:#2DD4BF;
+  --coral:#FB7185;
+
+  /* Tipografia */
+  --f-display:'Fraunces',ui-serif,Georgia,serif;
+  --f-body:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  --f-mono:'JetBrains Mono','SF Mono',Menlo,monospace;
+
+  /* Radios y sombras */
+  --r-sm:8px;
+  --r-md:14px;
+  --r-lg:20px;
+  --r-xl:28px;
+  --sh-sm:0 1px 2px rgba(0,0,0,.2);
+  --sh-md:0 4px 16px rgba(0,0,0,.3);
+  --sh-glow:0 0 0 1px rgba(0,208,132,.2),0 8px 32px rgba(0,208,132,.08);
+}
+
+/* ============================================================
+   RESET + BASE
+   ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  font-family:var(--f-body);
+  background:var(--bg0);
+  color:var(--text);
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  font-feature-settings:"ss01","cv11";
+}
+/* Textura sutil de fondo, muy Revolut */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(1200px 600px at 10% -10%,rgba(0,208,132,.04),transparent 60%),
+    radial-gradient(1000px 500px at 90% 110%,rgba(91,141,239,.03),transparent 60%);
+  pointer-events:none;
+  z-index:0;
+}
+.up{color:var(--neon)!important;}
+.down{color:var(--red)!important;}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums;}
+button{font-family:inherit;}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.hdr{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(12,14,20,.85);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 32px;
+  height:62px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+}
+.hdr-brand{display:flex;align-items:center;gap:14px;}
+.hdr-logo{
+  width:32px;height:32px;border-radius:10px;
+  background:linear-gradient(135deg,#00D084 0%,#2DD4BF 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-display);font-weight:700;font-size:16px;
+  color:#05060A;letter-spacing:-.02em;
+  box-shadow:0 4px 12px rgba(0,208,132,.25);
+}
+.hdr-title{display:flex;flex-direction:column;line-height:1.15;}
+.hdr-title h1{font-family:var(--f-display);font-weight:600;font-size:17px;letter-spacing:-.01em;}
+.hdr-title span{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:.02em;}
+
+.hdr-tickers{display:flex;align-items:center;gap:28px;}
+.tk{display:flex;align-items:baseline;gap:8px;}
+.tk-l{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.1em;}
+.tk-p{font-size:15px;font-weight:600;font-family:var(--f-mono);}
+.tk-c{font-size:12px;font-weight:600;font-family:var(--f-mono);}
+
+.hdr-right{display:flex;align-items:center;gap:16px;}
+.live{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:999px;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--neon);box-shadow:0 0 10px var(--neon-glow);animation:pulse 2s ease-in-out infinite;}
+.live-txt{font-size:10px;color:var(--text2);font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.85);}}
+.refresh-timer{font-size:11px;color:var(--text3);font-family:var(--f-mono);}
+
+/* ============================================================
+   LAYOUT PRINCIPAL
+   ============================================================ */
+.layout{
+  max-width:1560px;
+  margin:0 auto;
+  padding:24px 32px 48px;
+  display:grid;
+  grid-template-columns:1fr 320px;
+  gap:24px;
+  position:relative;
+  z-index:1;
+}
+.main{min-width:0;}
+.side{
+  position:sticky;
+  top:86px;
+  height:fit-content;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+.tabs{
+  display:flex;
+  gap:4px;
+  margin-bottom:22px;
+  background:var(--bg2);
+  padding:6px;
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{
+  padding:10px 16px;
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--text3);
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  border-radius:10px;
+  white-space:nowrap;
+  transition:all .18s cubic-bezier(.4,0,.2,1);
+  letter-spacing:-.005em;
+}
+.tab:hover{color:var(--text2);}
+.tab.on{
+  background:var(--bg3);
+  color:var(--text);
+  box-shadow:var(--sh-sm);
+}
+.pane{display:none;animation:fadeIn .25s ease-out;}
+.pane.on{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+/* ============================================================
+   HERO CARD (BTC destacado)
+   ============================================================ */
+.hero{
+  background:linear-gradient(135deg,var(--bg2) 0%,var(--bg1) 100%);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  padding:28px 32px;
+  margin-bottom:20px;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(600px 300px at 90% 50%,rgba(0,208,132,.06),transparent 70%);
+  pointer-events:none;
+}
+.hero-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;position:relative;z-index:1;flex-wrap:wrap;gap:12px;}
+.hero-title{display:flex;align-items:center;gap:14px;}
+.hero-icon{
+  width:44px;height:44px;border-radius:14px;
+  background:linear-gradient(135deg,#F7931A 0%,#FFB847 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#fff;font-size:20px;
+  font-family:var(--f-mono);
+  box-shadow:0 4px 14px rgba(247,147,26,.3);
+}
+.hero-name h2{font-family:var(--f-display);font-weight:600;font-size:22px;letter-spacing:-.015em;}
+.hero-name span{font-size:11px;color:var(--text3);font-weight:500;letter-spacing:.02em;}
+
+.hero-price{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.hero-price-v{font-family:var(--f-mono);font-size:36px;font-weight:700;letter-spacing:-.02em;line-height:1;}
+.hero-price-c{display:flex;align-items:center;gap:10px;font-family:var(--f-mono);font-size:13px;font-weight:600;}
+.hero-price-c .pill{padding:2px 10px;border-radius:999px;background:var(--bg3);font-size:11px;}
+.hero-price-c .pill.up{background:var(--neon-soft);color:var(--neon);}
+.hero-price-c .pill.down{background:var(--red-soft);color:var(--red);}
+
+.hero-stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  padding-top:20px;
+  border-top:1px solid var(--border);
+  position:relative;z-index:1;
+}
+.hero-stat{display:flex;flex-direction:column;gap:4px;}
+.hero-stat-l{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+.hero-stat-v{font-family:var(--f-mono);font-size:15px;font-weight:600;}
+
+/* ============================================================
+   KPI CARDS con sparkline
+   ============================================================ */
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+  margin-bottom:14px;
+}
+.kpi{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:14px 16px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .15s;
+  min-height:96px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+.kpi:hover{border-color:var(--border2);}
+.kpi-l{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:4px;}
+.kpi-v{font-family:var(--f-mono);font-size:20px;font-weight:700;line-height:1.2;letter-spacing:-.01em;}
+.kpi-s{font-size:11px;color:var(--text3);font-family:var(--f-mono);margin-top:2px;}
+.kpi-spark{position:absolute;right:0;bottom:0;width:80px;height:32px;opacity:.5;pointer-events:none;}
+
+/* ============================================================
+   CHART CONTAINERS
+   ============================================================ */
+.cc{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  margin-bottom:12px;
+  overflow:hidden;
+}
+.cc-h{
+  padding:14px 18px 6px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.cc-t{font-size:13px;font-weight:600;color:var(--text2);letter-spacing:-.005em;}
+.cc-sub{font-size:10px;color:var(--text3);font-family:var(--f-mono);}
+
+/* Timeframe pills */
+.pbs{
+  display:flex;
+  gap:2px;
+  background:var(--bg3);
+  border-radius:10px;
+  padding:3px;
+}
+.pb{
+  font-size:11px;
+  font-weight:600;
+  color:var(--text3);
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  padding:5px 11px;
+  border-radius:7px;
+  transition:all .15s;
+  letter-spacing:-.005em;
+}
+.pb:hover{color:var(--text2);}
+.pb.on{background:var(--bg1);color:var(--text);box-shadow:var(--sh-sm);}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+
+/* ============================================================
+   SIDEBAR - ESTADO DEL MERCADO (TFG)
+   ============================================================ */
+.side-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:16px 18px;
+}
+.side-card-t{
+  font-size:10px;
+  color:var(--text3);
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.side-card-t::before{
+  content:"";width:3px;height:12px;border-radius:2px;
+  background:var(--neon);
+}
+
+/* Regimen display */
+.reg-box{display:flex;flex-direction:column;gap:10px;}
+.reg-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 14px;border-radius:10px;
+  font-weight:700;font-size:14px;letter-spacing:.02em;
+  font-family:var(--f-mono);
+  width:fit-content;
+}
+.reg-bull{background:var(--neon-soft);color:var(--neon);border:1px solid rgba(0,208,132,.25);}
+.reg-bear{background:var(--red-soft);color:var(--red);border:1px solid rgba(255,90,95,.25);}
+.reg-side{background:var(--amber-soft);color:var(--amber);border:1px solid rgba(255,184,71,.25);}
+.reg-desc{font-size:11px;color:var(--text3);line-height:1.45;}
+
+/* Semaforo volatilidad */
+.sem-box{display:flex;align-items:center;gap:14px;}
+.sem-light{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;position:relative;
+}
+.sem-light::after{
+  content:"";position:absolute;inset:4px;border-radius:50%;
+  background:var(--sem-color,var(--text3));
+  box-shadow:0 0 20px var(--sem-color,transparent);
+}
+.sem-info{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+.sem-label{font-weight:700;font-size:15px;letter-spacing:.02em;}
+.sem-meta{font-size:10px;color:var(--text3);font-family:var(--f-mono);}
+
+/* Ventanas activas */
+.va-box{display:flex;flex-direction:column;gap:10px;}
+.va-stat{display:flex;align-items:baseline;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.va-stat:last-child{border:none;padding:0;}
+.va-label{font-size:11px;color:var(--text2);}
+.va-value{font-family:var(--f-mono);font-weight:700;font-size:15px;}
+.va-hint{font-size:10px;color:var(--text3);line-height:1.5;font-style:italic;padding-top:10px;border-top:1px solid var(--border);}
+
+/* Privacy notice */
+.privacy{
+  padding:12px 14px;
+  background:rgba(91,141,239,.04);
+  border:1px solid rgba(91,141,239,.15);
+  border-radius:10px;
+  font-size:10.5px;
+  color:var(--text2);
+  line-height:1.5;
+}
+.privacy strong{color:var(--blue);font-weight:600;}
+
+/* ============================================================
+   WATCHLIST (tabla mejorada)
+   ============================================================ */
+.watch-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;gap:12px;flex-wrap:wrap;
+}
+.watch-filters{display:flex;gap:4px;background:var(--bg3);padding:3px;border-radius:10px;}
+.watch-search{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);padding:6px 12px;border-radius:10px;
+  font-size:12px;min-width:160px;
+}
+.watch-search input{
+  background:transparent;border:none;color:var(--text);outline:none;
+  font-family:inherit;font-size:12px;width:100%;
+}
+.watch-search input::placeholder{color:var(--text3);}
+
+.st{width:100%;border-collapse:collapse;font-size:13px;}
+.st thead th{
+  text-align:left;padding:10px 16px;color:var(--text3);
+  font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.08em;
+  border-bottom:1px solid var(--border);background:var(--bg2);
+  position:sticky;top:0;
+}
+.st thead th:nth-child(n+3){text-align:right;}
+.st tbody td{padding:12px 16px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;}
+.st tbody td:nth-child(n+3){text-align:right;font-family:var(--f-mono);font-size:12px;}
+.st tbody tr{cursor:pointer;transition:background .12s;}
+.st tbody tr:hover{background:var(--bg3);}
+.st tbody tr.sel{background:var(--bg3);box-shadow:inset 3px 0 0 var(--neon);}
+.st tbody tr:last-child td{border-bottom:none;}
+
+.star{
+  font-size:14px;color:var(--text4);cursor:pointer;
+  background:none;border:none;padding:0 4px;transition:color .15s;
+  display:inline-flex;align-items:center;
+}
+.star:hover{color:var(--amber);}
+.star.on{color:var(--amber);}
+
+.st-name{display:flex;align-items:center;gap:10px;}
+.st-avatar{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:11px;color:#fff;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  flex-shrink:0;
+}
+.st-n-txt{display:flex;flex-direction:column;line-height:1.2;}
+.st-n-txt b{font-weight:600;font-size:13px;color:var(--text);}
+.st-n-txt span{font-size:10px;color:var(--text3);font-family:var(--f-mono);}
+.st-spark{width:70px;height:26px;}
+
+/* Selected stock detail */
+.sd{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-md);
+  margin:12px 0;overflow:hidden;display:none;
+}
+.sd.vis{display:block;animation:slideDown .3s ease-out;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.sd-h{padding:16px 20px 8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.sd-info{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+.sd-name{font-family:var(--f-display);font-weight:600;font-size:20px;letter-spacing:-.01em;}
+.sd-p{font-family:var(--f-mono);font-size:16px;font-weight:600;}
+.sd-close{
+  font-size:20px;color:var(--text3);cursor:pointer;
+  background:none;border:none;padding:4px 10px;border-radius:8px;
+  transition:all .15s;
+}
+.sd-close:hover{color:var(--text);background:var(--bg3);}
+
+/* ============================================================
+   COMPARADOR
+   ============================================================ */
+.cmp-box{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.cmp-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-right:6px;}
+.cmp-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 10px;background:var(--bg3);border-radius:999px;
+  font-size:11.5px;font-weight:600;cursor:pointer;transition:all .15s;
+  border:1px solid transparent;
+}
+.cmp-chip:hover{background:var(--bg4);}
+.cmp-chip.on{background:var(--neon-soft);color:var(--neon);border-color:rgba(0,208,132,.3);}
+.cmp-clear{font-size:10px;color:var(--text3);background:none;border:none;cursor:pointer;padding:4px 8px;}
+.cmp-clear:hover{color:var(--text2);}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer{
+  text-align:center;padding:28px;font-size:11px;color:var(--text3);
+  border-top:1px solid var(--border);margin-top:20px;
+  display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;
+}
+footer a{color:var(--text2);text-decoration:none;}
+footer a:hover{color:var(--text);}
+.dot-sep{width:3px;height:3px;border-radius:50%;background:var(--text4);}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media(max-width:1200px){
+  .layout{grid-template-columns:1fr;padding:16px;}
+  .side{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;}
+  .side-card{padding:14px;}
+}
+@media(max-width:768px){
+  .hdr{padding:10px 16px;height:auto;flex-wrap:wrap;gap:10px;}
+  .hdr-tickers{gap:14px;flex-wrap:wrap;}
+  .hdr-right{order:3;width:100%;justify-content:space-between;}
+  .layout{padding:14px;}
+  .hero{padding:20px;border-radius:var(--r-lg);}
+  .hero-head{flex-direction:column;align-items:flex-start;}
+  .hero-price{align-items:flex-start;}
+  .hero-price-v{font-size:30px;}
+  .hero-stats{grid-template-columns:repeat(2,1fr);}
+  .g2,.g3{grid-template-columns:1fr;}
+}
+
+/* ============================================================
+   PLOTLY OVERRIDES
+   ============================================================ */
+.js-plotly-plot .plotly .modebar{display:none!important;}
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================ HEADER ============================================================ -->
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-logo">T</div>
+    <div class="hdr-title">
+      <h1>Terminal TFG</h1>
+      <span>Ignacio Rodriguez · UFV 2025-2026</span>
+    </div>
+  </div>
+
+  <div class="hdr-tickers">
+    <div class="tk">
+      <span class="tk-l">BTC</span>
+      <span class="tk-p">__BTC_P__</span>
+      <span class="tk-c __BTC_CL__">__BTC_C__</span>
+    </div>
+    <div class="tk">
+      <span class="tk-l">ETH</span>
+      <span class="tk-p">__ETH_P__</span>
+      <span class="tk-c __ETH_CL__">__ETH_C__</span>
+    </div>
+    <div class="tk">
+      <span class="tk-l">F&amp;G</span>
+      <span class="tk-p">__FG_V__</span>
+      <span class="tk-c __FG_CL__">__FG_T__</span>
+    </div>
+  </div>
+
+  <div class="hdr-right">
+    <div class="live">
+      <span class="live-dot"></span>
+      <span class="live-txt">Live</span>
+    </div>
+    <span class="refresh-timer" id="refresh-timer">Actualizado __GEN_AT__</span>
+  </div>
+</header>
+
+<!-- ============================================================ LAYOUT ============================================================ -->
+<div class="layout">
+
+  <!-- =========== MAIN =========== -->
+  <div class="main">
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button class="tab on" onclick="sw('cripto',this)">Mercado Cripto</button>
+      <button class="tab" onclick="sw('macro',this)">Contexto Macro</button>
+      <button class="tab" onclick="sw('rv',this)">Renta Variable</button>
+      <button class="tab" onclick="sw('tfg',this)">Analisis TFG</button>
+      <button class="tab" onclick="sw('sent',this)">Sentimiento</button>
+      <button class="tab" onclick="sw('tech',this)">Tecnicos BTC</button>
+    </nav>
+
+    <!-- =============================================
+         TAB: CRIPTO
+         ============================================= -->
+    <div id="p-cripto" class="pane on">
+
+      <!-- HERO BTC -->
+      <div class="hero">
+        <div class="hero-head">
+          <div class="hero-title">
+            <div class="hero-icon">B</div>
+            <div class="hero-name">
+              <h2>Bitcoin</h2>
+              <span>BTC / USD · yfinance 1h</span>
+            </div>
+          </div>
+          <div class="hero-price">
+            <div class="hero-price-v">__BTC_P__</div>
+            <div class="hero-price-c">
+              <span class="pill __BTC_CL__">__BTC_C__</span>
+              <span style="color:var(--text3);">24h</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><span class="hero-stat-l">Rango 24h</span><span class="hero-stat-v" id="h-rng">—</span></div>
+          <div class="hero-stat"><span class="hero-stat-l">Volumen 24h</span><span class="hero-stat-v" id="h-vol">—</span></div>
+          <div class="hero-stat"><span class="hero-stat-l">Regimen actual</span><span class="hero-stat-v" style="color:__REG_COL__">__REG__</span></div>
+          <div class="hero-stat"><span class="hero-stat-l">Volatilidad</span><span class="hero-stat-v" style="color:__SEM_COL__">__SEM__ · P__SEM_P__</span></div>
+        </div>
+      </div>
+
+      <!-- BTC Chart con overlay regimen -->
+      <div class="cc">
+        <div class="cc-h">
+          <div>
+            <div class="cc-t">BTC / USD · Candlestick con regimen</div>
+            <div class="cc-sub">Bandas: <span style="color:var(--neon)">BULL</span> · <span style="color:var(--red)">BEAR</span> · <span style="color:var(--amber)">SIDEWAYS</span></div>
+          </div>
+          <div class="pbs">
+            <button class="pb" onclick="sp('btc',168,this)">7D</button>
+            <button class="pb" onclick="sp('btc',720,this)">30D</button>
+            <button class="pb on" onclick="sp('btc',2160,this)">90D</button>
+            <button class="pb" onclick="sp('btc',4320,this)">6M</button>
+            <button class="pb" onclick="sp('btc',8760,this)">1Y</button>
+          </div>
+        </div>
+        <div id="c-btc" style="height:460px;"></div>
+      </div>
+
+      <!-- ETH + Corr -->
+      <div class="g2">
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">ETH / USD</div>
+            <div class="pbs">
+              <button class="pb" onclick="sp('eth',168,this)">7D</button>
+              <button class="pb on" onclick="sp('eth',720,this)">30D</button>
+              <button class="pb" onclick="sp('eth',2160,this)">90D</button>
+              <button class="pb" onclick="sp('eth',8760,this)">1Y</button>
+            </div>
+          </div>
+          <div id="c-eth" style="height:300px;"></div>
+        </div>
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">Correlacion BTC-ETH · rolling 24h</div>
+            <div class="cc-sub">Rango -1 a +1</div>
+          </div>
+          <div id="c-corr" style="height:300px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =============================================
+         TAB: MACRO
+         ============================================= -->
+    <div id="p-macro" class="pane">
+      <div class="kpis" id="kpi-macro"></div>
+      <div class="g2">
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">DXY · Dolar Index</div>
+            <div class="pbs"><button class="pb" onclick="sp('dxy',30,this)">30D</button><button class="pb on" onclick="sp('dxy',90,this)">90D</button><button class="pb" onclick="sp('dxy',180,this)">6M</button><button class="pb" onclick="sp('dxy',365,this)">1Y</button></div>
+          </div>
+          <div id="c-dxy" style="height:290px;"></div>
+        </div>
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">Oro · XAU/USD</div>
+            <div class="pbs"><button class="pb" onclick="sp('oro',30,this)">30D</button><button class="pb on" onclick="sp('oro',90,this)">90D</button><button class="pb" onclick="sp('oro',180,this)">6M</button><button class="pb" onclick="sp('oro',365,this)">1Y</button></div>
+          </div>
+          <div id="c-oro" style="height:290px;"></div>
+        </div>
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">Bonos US 10Y · Yield</div>
+            <div class="pbs"><button class="pb" onclick="sp('bon',30,this)">30D</button><button class="pb on" onclick="sp('bon',90,this)">90D</button><button class="pb" onclick="sp('bon',180,this)">6M</button><button class="pb" onclick="sp('bon',365,this)">1Y</button></div>
+          </div>
+          <div id="c-bon" style="height:290px;"></div>
+        </div>
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">Petroleo WTI</div>
+            <div class="pbs"><button class="pb" onclick="sp('wti',30,this)">30D</button><button class="pb on" onclick="sp('wti',90,this)">90D</button><button class="pb" onclick="sp('wti',180,this)">6M</button><button class="pb" onclick="sp('wti',365,this)">1Y</button></div>
+          </div>
+          <div id="c-wti" style="height:290px;"></div>
+        </div>
+      </div>
+      <div class="cc">
+        <div class="cc-h">
+          <div class="cc-t">VIX · Indice de miedo del mercado</div>
+          <div class="pbs"><button class="pb" onclick="sp('vix',30,this)">30D</button><button class="pb on" onclick="sp('vix',90,this)">90D</button><button class="pb" onclick="sp('vix',180,this)">6M</button><button class="pb" onclick="sp('vix',365,this)">1Y</button></div>
+        </div>
+        <div id="c-vix" style="height:290px;"></div>
+      </div>
+    </div>
+
+    <!-- =============================================
+         TAB: RENTA VARIABLE
+         ============================================= -->
+    <div id="p-rv" class="pane">
+      <div class="kpis" id="kpi-idx"></div>
+
+      <div class="cc">
+        <div class="cc-h">
+          <div class="cc-t">Indices · Rendimiento relativo (%)</div>
+          <div class="pbs">
+            <button class="pb" onclick="sp('idx',30,this)">30D</button>
+            <button class="pb" onclick="sp('idx',90,this)">90D</button>
+            <button class="pb on" onclick="sp('idx',180,this)">6M</button>
+            <button class="pb" onclick="sp('idx',365,this)">1Y</button>
+          </div>
+        </div>
+
+        <!-- Comparador -->
+        <div class="cmp-box" id="cmp-box">
+          <span class="cmp-label">Comparar</span>
+          <!-- chips se generan con JS -->
+          <button class="cmp-clear" onclick="cmpClear()">Limpiar</button>
+        </div>
+        <div id="c-idx" style="height:360px;"></div>
+      </div>
+
+      <!-- Detalle de accion seleccionada -->
+      <div id="sd" class="sd">
+        <div class="sd-h">
+          <div class="sd-info">
+            <span class="sd-name" id="sd-n">—</span>
+            <span class="sd-p" id="sd-p"></span>
+            <span class="tk-c" id="sd-c"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="pbs" id="pbs-sd">
+              <button class="pb" onclick="sdp(7,this)">7D</button>
+              <button class="pb on" onclick="sdp(30,this)">30D</button>
+              <button class="pb" onclick="sdp(90,this)">90D</button>
+              <button class="pb" onclick="sdp(180,this)">6M</button>
+              <button class="pb" onclick="sdp(365,this)">1Y</button>
+            </div>
+            <button class="sd-close" onclick="sdX()">&times;</button>
+          </div>
+        </div>
+        <div id="c-sd" style="height:320px;"></div>
+      </div>
+
+      <!-- Watchlist unificada -->
+      <div class="cc">
+        <div class="watch-head">
+          <div class="cc-t">Watchlist</div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <div class="watch-filters">
+              <button class="pb on" onclick="wFil('all',this)">Todas</button>
+              <button class="pb" onclick="wFil('fav',this)">&#9733; Favoritas</button>
+              <button class="pb" onclick="wFil('us',this)">US</button>
+              <button class="pb" onclick="wFil('eu',this)">EU</button>
+              <button class="pb" onclick="wFil('es',this)">ES</button>
+            </div>
+            <div class="watch-search">
+              <span style="color:var(--text3);">&#128269;</span>
+              <input type="text" id="wSearch" placeholder="Buscar..." oninput="wRender()">
+            </div>
+          </div>
+        </div>
+        <table class="st" id="t-watch">
+          <thead>
+            <tr>
+              <th style="width:34px;"></th>
+              <th>Empresa</th>
+              <th>Precio</th>
+              <th>1D</th>
+              <th>5D</th>
+              <th>30D</th>
+              <th style="width:84px;">Trend</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- =============================================
+         TAB: ANALISIS TFG
+         ============================================= -->
+    <div id="p-tfg" class="pane">
+      <div class="privacy" style="margin-bottom:14px;">
+        <strong>Aviso:</strong> esta seccion muestra un analisis contextual basado en los mismos principios que estudia el TFG (regimen de mercado + filtrado por volatilidad), usando un proxy publico. <strong>No</strong> expone el modelo XGBoost del TFG ni las predicciones reales del pipeline, que se mantienen privadas.
+      </div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <div>
+            <div class="kpi-l">Regimen actual</div>
+            <div class="kpi-v" style="color:__REG_COL__">__REG__</div>
+          </div>
+          <div class="kpi-s">Proxy sobre BTC 1h</div>
+        </div>
+        <div class="kpi">
+          <div>
+            <div class="kpi-l">Volatilidad</div>
+            <div class="kpi-v" style="color:__SEM_COL__">__SEM__</div>
+          </div>
+          <div class="kpi-s">Percentil __SEM_P__ · ATR __SEM_VAL__</div>
+        </div>
+        <div class="kpi">
+          <div>
+            <div class="kpi-l">Tiempo en ventana activa (30d)</div>
+            <div class="kpi-v">__VA_PCT__</div>
+          </div>
+          <div class="kpi-s">Regimen + vol &lt; P80</div>
+        </div>
+        <div class="kpi">
+          <div>
+            <div class="kpi-l">Ventanas activas totales</div>
+            <div class="kpi-v" id="va-count">—</div>
+          </div>
+          <div class="kpi-s">En el ultimo ano</div>
+        </div>
+      </div>
+
+      <div class="cc">
+        <div class="cc-h">
+          <div>
+            <div class="cc-t">BTC con overlay de regimen y ventanas activas</div>
+            <div class="cc-sub">Sombreado verde: condiciones favorables (proxy)</div>
+          </div>
+          <div class="pbs">
+            <button class="pb" onclick="sp('tfg',720,this)">30D</button>
+            <button class="pb on" onclick="sp('tfg',2160,this)">90D</button>
+            <button class="pb" onclick="sp('tfg',4320,this)">6M</button>
+            <button class="pb" onclick="sp('tfg',8760,this)">1Y</button>
+          </div>
+        </div>
+        <div id="c-tfg" style="height:480px;"></div>
+      </div>
+
+      <div class="g2">
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">Percentil historico de volatilidad (ATR%)</div>
+            <div class="cc-sub">Filtro activo si percentil &le; 80</div>
+          </div>
+          <div id="c-volpct" style="height:280px;"></div>
+        </div>
+        <div class="cc" style="padding:20px;">
+          <div class="cc-t" style="margin-bottom:14px;">Como se lee esta pagina</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6;">
+            <p style="margin-bottom:10px;">La idea central del TFG es que el mercado de BTC <strong>no es igual de predecible en todo momento</strong>. Existen ventanas donde el regimen es estable y la volatilidad es controlada, y son esas ventanas las que un modelo de ML puede explotar con precision aceptable.</p>
+            <p style="margin-bottom:10px;">El sombreado verde en la grafica superior marca los periodos donde ambas condiciones se cumplen <em>en el proxy publico</em>. No son senales de compra ni venta.</p>
+            <p>La implementacion completa del modelo (HMM + GARCH + XGBoost con submodelos por regimen) se mantiene privada y es objeto de la memoria del TFG.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =============================================
+         TAB: SENTIMIENTO
+         ============================================= -->
+    <div id="p-sent" class="pane">
+      <div class="kpis">
+        <div class="kpi">
+          <div>
+            <div class="kpi-l">Fear &amp; Greed</div>
+            <div class="kpi-v __FG_CL__">__FG_V__</div>
+          </div>
+          <div class="kpi-s">__FG_T__</div>
+        </div>
+        <div class="kpi">
+          <div>
+            <div class="kpi-l">VIX</div>
+            <div class="kpi-v" style="color:var(--amber)" id="k-vix">—</div>
+          </div>
+          <div class="kpi-s">Volatilidad SP500</div>
+        </div>
+        <div class="kpi">
+          <div>
+            <div class="kpi-l">Semaforo BTC</div>
+            <div class="kpi-v" style="color:__SEM_COL__">__SEM__</div>
+          </div>
+          <div class="kpi-s">P__SEM_P__</div>
+        </div>
+        <div class="kpi">
+          <div>
+            <div class="kpi-l">Regimen BTC</div>
+            <div class="kpi-v" style="color:__REG_COL__">__REG__</div>
+          </div>
+          <div class="kpi-s">Proxy 1h</div>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">Fear &amp; Greed Index</div>
+            <div class="cc-sub">alternative.me · ultimo ano</div>
+          </div>
+          <div id="c-fg" style="height:290px;"></div>
+        </div>
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">VIX</div>
+            <div class="pbs"><button class="pb" onclick="sp('vix2',30,this)">30D</button><button class="pb on" onclick="sp('vix2',90,this)">90D</button><button class="pb" onclick="sp('vix2',180,this)">6M</button></div>
+          </div>
+          <div id="c-vix2" style="height:290px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =============================================
+         TAB: TECNICOS BTC
+         ============================================= -->
+    <div id="p-tech" class="pane">
+      <div class="kpis" id="kpi-tech"></div>
+      <div class="g2">
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">RSI (14)</div>
+            <div class="pbs"><button class="pb" onclick="sp('rsi',168,this)">7D</button><button class="pb on" onclick="sp('rsi',720,this)">30D</button><button class="pb" onclick="sp('rsi',2160,this)">90D</button></div>
+          </div>
+          <div id="c-rsi" style="height:280px;"></div>
+        </div>
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">MACD (12, 26, 9)</div>
+            <div class="pbs"><button class="pb" onclick="sp('macd',168,this)">7D</button><button class="pb on" onclick="sp('macd',720,this)">30D</button><button class="pb" onclick="sp('macd',2160,this)">90D</button></div>
+          </div>
+          <div id="c-macd" style="height:280px;"></div>
+        </div>
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">ATR % (14) · volatilidad intradia</div>
+            <div class="pbs"><button class="pb" onclick="sp('atr',168,this)">7D</button><button class="pb on" onclick="sp('atr',720,this)">30D</button><button class="pb" onclick="sp('atr',2160,this)">90D</button></div>
+          </div>
+          <div id="c-atr" style="height:280px;"></div>
+        </div>
+        <div class="cc">
+          <div class="cc-h">
+            <div class="cc-t">Volume Z-Score · actividad vs media</div>
+            <div class="pbs"><button class="pb" onclick="sp('vz',168,this)">7D</button><button class="pb on" onclick="sp('vz',720,this)">30D</button><button class="pb" onclick="sp('vz',2160,this)">90D</button></div>
+          </div>
+          <div id="c-vz" style="height:280px;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- =========== SIDEBAR =========== -->
+  <aside class="side">
+
+    <div class="side-card">
+      <div class="side-card-t">Regimen de mercado</div>
+      <div class="reg-box">
+        <div class="reg-badge reg-__REG_CLASS__" id="reg-badge">__REG__</div>
+        <div class="reg-desc" id="reg-desc">—</div>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-t">Semaforo volatilidad</div>
+      <div class="sem-box">
+        <div class="sem-light" style="--sem-color:__SEM_COL__;"></div>
+        <div class="sem-info">
+          <span class="sem-label" style="color:__SEM_COL__">__SEM__</span>
+          <span class="sem-meta">Percentil __SEM_P__ · ATR __SEM_VAL__</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-t">Ventanas favorables</div>
+      <div class="va-box">
+        <div class="va-stat">
+          <span class="va-label">Cobertura 30d</span>
+          <span class="va-value">__VA_PCT__</span>
+        </div>
+        <div class="va-stat">
+          <span class="va-label">Activa ahora</span>
+          <span class="va-value" id="va-now">—</span>
+        </div>
+        <div class="va-hint">Ventanas donde el regimen es estable y la volatilidad se mantiene bajo el percentil 80 historico.</div>
+      </div>
+    </div>
+
+    <div class="privacy">
+      <strong>Sobre el modelo.</strong> La terminal usa un proxy publico de regimen y volatilidad. El pipeline HMM+GARCH+XGBoost del TFG es privado.
+    </div>
+
+  </aside>
+
+</div>
+
+<footer>
+  <span>Terminal TFG · Prediccion selectiva de BTC mediante ML</span>
+  <span class="dot-sep"></span>
+  <span>Ignacio Rodriguez · UFV 2025-2026</span>
+  <span class="dot-sep"></span>
+  <span>Ultima actualizacion: __GEN_AT__</span>
+</footer>
+
+<!-- ============================================================ SCRIPT ============================================================ -->
+<script>
+// ============================================================
+// PAYLOAD (inyectado por Python)
+// ============================================================
+const PAYLOAD = __PAYLOAD_JSON__;
+const D = PAYLOAD.data;
+const K = PAYLOAD.kpi;
+const TK_IDX = PAYLOAD.tickers_indices;
+
+// ============================================================
+// CONFIG PLOTLY
+// ============================================================
+const CFG = {displayModeBar:false, responsive:true};
+const LAY = {
+  paper_bgcolor:'transparent',
+  plot_bgcolor:'transparent',
+  font:{family:"'IBM Plex Sans',system-ui,sans-serif",color:'#5A5F74',size:10},
+  margin:{l:48,r:12,t:8,b:32},
+  xaxis:{gridcolor:'#1A1E2C',showgrid:true,zeroline:false,linecolor:'#262B3E',tickfont:{size:10,color:'#5A5F74'}},
+  yaxis:{gridcolor:'#1A1E2C',showgrid:true,zeroline:false,linecolor:'#262B3E',tickfont:{size:10,color:'#5A5F74'}},
+  legend:{orientation:'h',yanchor:'bottom',y:1.02,xanchor:'right',x:1,font:{size:10,color:'#9CA0B3'}},
+  hoverlabel:{bgcolor:'#131620',bordercolor:'#2A2F42',font:{color:'#F2F3F7',size:11,family:"'JetBrains Mono',monospace"}},
+};
+const COL = {
+  green:'#00D084', red:'#FF5A5F', blue:'#5B8DEF', amber:'#FFB847',
+  purple:'#9B8AFB', teal:'#2DD4BF', coral:'#FB7185', white:'#F2F3F7',
+};
+
+// ============================================================
+// UTILIDADES
+// ============================================================
+const md = a => a.map(t => new Date(t));
+const pctFmt = v => (v>=0?'+':'')+v.toFixed(2)+'%';
+const fmtUSD = (v,d=0) => '$'+v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+function slice(arr, n){ const i = Math.max(0, arr.length - n); return arr.slice(i); }
+
+function regShapes(bloques, tipo){
+  // Construye shapes de fondo para Plotly (vrect) segun bloques de regimen
+  const cols = {
+    'BULL':'rgba(0,208,132,.07)',
+    'BEAR':'rgba(255,90,95,.07)',
+    'SIDEWAYS':'rgba(255,184,71,.06)',
+  };
+  return bloques.filter(b => !tipo || b.r === tipo).map(b => ({
+    type:'rect', xref:'x', yref:'paper',
+    x0:new Date(b.t0), x1:new Date(b.t1),
+    y0:0, y1:1,
+    fillcolor: cols[b.r] || 'transparent',
+    line:{width:0},
+  }));
+}
+
+function vaShapes(bloques){
+  return bloques.map(b => ({
+    type:'rect', xref:'x', yref:'paper',
+    x0:new Date(b.t0), x1:new Date(b.t1),
+    y0:0, y1:1,
+    fillcolor:'rgba(0,208,132,.1)',
+    line:{width:0},
+  }));
+}
+
+// ============================================================
+// SWITCH TAB
+// ============================================================
+function sw(id, btn){
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.getElementById('p-'+id).classList.add('on');
+  btn.classList.add('on');
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 60);
+}
+
+// ============================================================
+// CHART: BTC CANDLESTICK CON REGIMEN
+// ============================================================
+function rBTC(n){
+  const s = D.btc;
+  if (!s.d.length) return;
+  const i = Math.max(0, s.d.length - n);
+  const dx = s.d.slice(i);
+  const t0 = dx[0];
+
+  // Filtramos bloques de regimen al rango visible
+  const bloques = (D.regimen||[]).filter(b => b.t1 >= t0);
+
+  const traces = [{
+    x:md(dx),
+    open:s.o.slice(i), high:s.h.slice(i), low:s.l.slice(i), close:s.c.slice(i),
+    type:'candlestick',
+    increasing:{line:{color:COL.green,width:1},fillcolor:'rgba(0,208,132,.2)'},
+    decreasing:{line:{color:COL.red,width:1},fillcolor:'rgba(255,90,95,.2)'},
+    name:'BTC',
+  }];
+
+  // EMA50 como contexto de tendencia
+  if (D.btc_ema && D.btc_ema.ema50 && D.btc_ema.ema50.length) {
+    traces.push({
+      x:md(dx),
+      y:D.btc_ema.ema50.slice(i),
+      type:'scatter', mode:'lines',
+      line:{color:COL.blue,width:1.2,dash:'dot'},
+      name:'EMA 50',
+      opacity:.6,
+    });
+  }
+
+  Plotly.newPlot('c-btc', traces, {
+    ...LAY, height:460,
+    xaxis:{...LAY.xaxis, rangeslider:{visible:false}},
+    shapes: regShapes(bloques),
+  }, CFG);
+}
+
+// ============================================================
+// CHART: LINE GENERICO
+// ============================================================
+function nL(id, dates, vals, h, color, fill=true){
+  color = color || COL.green;
+  const fillColor = color.startsWith('#') ? color + '1A' : color;
+  Plotly.newPlot(id, [{
+    x:md(dates), y:vals,
+    type:'scatter', mode:'lines',
+    line:{color, width:2, shape:'spline'},
+    fill: fill ? 'tozeroy' : 'none',
+    fillcolor: fill ? fillColor : 'transparent',
+  }], {...LAY, height:h}, CFG);
+}
+
+function rL(id, key, n, h, color){
+  const s = D.macro ? (D.macro[key] || D[key]) : D[key];
+  if (!s || !s.d.length) return;
+  const i = Math.max(0, s.d.length - n);
+  nL(id, s.d.slice(i), s.v.slice(i), h, color);
+}
+
+// ============================================================
+// TFG: BTC con overlay
+// ============================================================
+function rTFG(n){
+  const s = D.btc;
+  if (!s.d.length) return;
+  const i = Math.max(0, s.d.length - n);
+  const dx = s.d.slice(i);
+  const t0 = dx[0];
+
+  const bloquesR = (D.regimen||[]).filter(b => b.t1 >= t0);
+  const bloquesVA = (D.ventanas_act||[]).filter(b => b.t1 >= t0);
+
+  const traces = [{
+    x:md(dx), y:s.c.slice(i),
+    type:'scatter', mode:'lines',
+    line:{color:COL.white, width:1.8},
+    name:'BTC',
+  }];
+
+  Plotly.newPlot('c-tfg', traces, {
+    ...LAY, height:480,
+    shapes: [...regShapes(bloquesR), ...vaShapes(bloquesVA)],
+  }, CFG);
+
+  // KPIs de ventana activa
+  const vaCount = (D.ventanas_act||[]).length;
+  const el = document.getElementById('va-count');
+  if (el) el.textContent = vaCount;
+
+  // Ventana activa ahora?
+  const nowMs = Date.now();
+  const activa = (D.ventanas_act||[]).some(b => b.t0 <= nowMs && nowMs <= b.t1);
+  const vaNow = document.getElementById('va-now');
+  if (vaNow) {
+    vaNow.textContent = activa ? 'Si' : 'No';
+    vaNow.style.color = activa ? 'var(--neon)' : 'var(--red)';
+  }
+}
+
+function rVolPct(n){
+  const s = D.vol_pct_hist;
+  if (!s || !s.d.length) return;
+  n = n || 2160;
+  const i = Math.max(0, s.d.length - n);
+  Plotly.newPlot('c-volpct', [{
+    x:md(s.d.slice(i)), y:s.v.slice(i),
+    type:'scatter', mode:'lines',
+    line:{color:COL.amber, width:1.6},
+    fill:'tozeroy', fillcolor:'rgba(255,184,71,.08)',
+  }], {
+    ...LAY, height:280,
+    yaxis:{...LAY.yaxis, range:[0,100]},
+    shapes:[
+      {type:'line', y0:80, y1:80, x0:0, x1:1, xref:'paper', line:{dash:'dash',color:COL.red,width:1}},
+      {type:'rect', y0:80, y1:100, x0:0, x1:1, xref:'paper', fillcolor:'rgba(255,90,95,.05)', line:{width:0}},
+    ],
+  }, CFG);
+}
+
+// ============================================================
+// INDICES COMPARADOR
+// ============================================================
+const IC = [COL.blue, COL.teal, COL.coral, COL.amber, COL.purple];
+let cmpSel = new Set(TK_IDX);
+
+function cmpInit(){
+  const box = document.getElementById('cmp-box');
+  if (!box) return;
+  // Insertamos chips antes del boton clear
+  const clearBtn = box.querySelector('.cmp-clear');
+  TK_IDX.forEach((nm, idx) => {
+    const chip = document.createElement('button');
+    chip.className = 'cmp-chip on';
+    chip.textContent = nm;
+    chip.onclick = () => cmpTgl(nm, chip);
+    box.insertBefore(chip, clearBtn);
+  });
+}
+
+function cmpTgl(nm, chip){
+  if (cmpSel.has(nm)) { cmpSel.delete(nm); chip.classList.remove('on'); }
+  else { cmpSel.add(nm); chip.classList.add('on'); }
+  rIdx(curIdxN);
+}
+
+function cmpClear(){
+  cmpSel.clear();
+  document.querySelectorAll('.cmp-chip').forEach(c => c.classList.remove('on'));
+  rIdx(curIdxN);
+}
+
+let curIdxN = 180;
+function rIdx(n){
+  curIdxN = n;
+  const idx = D.indices;
+  const trs = [];
+  let j = 0;
+  TK_IDX.forEach(nm => {
+    if (!cmpSel.has(nm)) { j++; return; }
+    const s = idx[nm];
+    if (!s || !s.d.length) { j++; return; }
+    const i = Math.max(0, s.d.length - n);
+    const dx = s.d.slice(i), vx = s.v.slice(i);
+    if (!vx[0]) { j++; return; }
+    const r = vx.map(v => (v / vx[0] - 1) * 100);
+    trs.push({
+      x:md(dx), y:r,
+      type:'scatter', mode:'lines', name:nm,
+      line:{color: IC[j % IC.length], width:2},
+    });
+    j++;
+  });
+  Plotly.newPlot('c-idx', trs, {
+    ...LAY, height:360,
+    shapes:[{type:'line', y0:0, y1:0, x0:0, x1:1, xref:'paper', line:{dash:'dot',color:'#262B3E',width:1}}],
+  }, CFG);
+}
+
+// ============================================================
+// KPIs MACRO (con sparklines)
+// ============================================================
+function renderKpiMacro(){
+  const box = document.getElementById('kpi-macro');
+  if (!box) return;
+  const items = [
+    {k:'dxy', label:'DXY', prefix:'', suffix:'', color:COL.blue},
+    {k:'oro', label:'Oro XAU', prefix:'$', suffix:'', color:COL.amber},
+    {k:'bonos', label:'Bonos 10Y', prefix:'', suffix:'%', color:COL.amber},
+    {k:'wti', label:'Petroleo WTI', prefix:'$', suffix:'', color:COL.coral},
+    {k:'vix', label:'VIX', prefix:'', suffix:'', color:COL.red},
+  ];
+  box.innerHTML = items.map(it => {
+    const pk = 'm_'+it.k;
+    const val = K[pk+'_p'] || '—';
+    const chg = K[pk+'_c'] || '';
+    const cls = K[pk+'_cl'] || '';
+    return `
+      <div class="kpi">
+        <div>
+          <div class="kpi-l">${it.label}</div>
+          <div class="kpi-v ${cls}">${val}</div>
+        </div>
+        <div class="kpi-s"><span class="${cls}">${chg}</span></div>
+        <svg class="kpi-spark" viewBox="0 0 80 32" id="sp-${it.k}"></svg>
+      </div>`;
+  }).join('');
+  items.forEach(it => drawSpark('sp-'+it.k, (D.macro[it.k]||{}).spark||[], it.color));
+}
+
+// Sparkline SVG (para KPIs)
+function drawSpark(id, data, color){
+  const svg = document.getElementById(id);
+  if (!svg || !data || data.length < 2) return;
+  const w = 80, h = 32;
+  const clean = data.filter(v => v !== null);
+  if (clean.length < 2) return;
+  const min = Math.min(...clean), max = Math.max(...clean);
+  const rng = max - min || 1;
+  const step = w / (data.length - 1);
+  const pts = data.map((v, i) => {
+    if (v === null) return null;
+    const x = i * step;
+    const y = h - ((v - min) / rng) * (h - 4) - 2;
+    return [x, y];
+  }).filter(p => p !== null);
+  const d = 'M ' + pts.map(p => p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L ');
+  const last = clean[clean.length-1], first = clean[0];
+  const c = last >= first ? color : COL.red;
+  svg.innerHTML = `
+    <defs><linearGradient id="g-${id}" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="${c}" stop-opacity=".3"/>
+      <stop offset="100%" stop-color="${c}" stop-opacity="0"/>
+    </linearGradient></defs>
+    <path d="${d} L ${w},${h} L 0,${h} Z" fill="url(#g-${id})"/>
+    <path d="${d}" fill="none" stroke="${c}" stroke-width="1.4" stroke-linejoin="round"/>`;
+}
+
+// KPIs indices
+function renderKpiIdx(){
+  const box = document.getElementById('kpi-idx');
+  if (!box) return;
+  box.innerHTML = K.idx_data.map((it, j) => `
+    <div class="kpi">
+      <div>
+        <div class="kpi-l">${it.n}</div>
+        <div class="kpi-v ${it.cl}">${it.p}</div>
+      </div>
+      <div class="kpi-s"><span class="${it.cl}">${it.c}</span></div>
+      <svg class="kpi-spark" viewBox="0 0 80 32" id="sp-idx-${j}"></svg>
+    </div>
+  `).join('');
+  K.idx_data.forEach((it, j) => drawSpark('sp-idx-'+j, it.spark||[], IC[j % IC.length]));
+}
+
+// KPIs tecnicos
+function renderKpiTech(){
+  const box = document.getElementById('kpi-tech');
+  if (!box) return;
+  box.innerHTML = `
+    <div class="kpi"><div><div class="kpi-l">RSI (14)</div><div class="kpi-v">${K.rsi}</div></div><div class="kpi-s">${K.rsi_t}</div></div>
+    <div class="kpi"><div><div class="kpi-l">ATR %</div><div class="kpi-v">${K.atr}</div></div><div class="kpi-s">Vol intradia</div></div>
+    <div class="kpi"><div><div class="kpi-l">Vol Z-Score</div><div class="kpi-v" style="color:var(--blue)">${K.vzv}</div></div><div class="kpi-s">Actividad</div></div>
+    <div class="kpi"><div><div class="kpi-l">MACD</div><div class="kpi-v ${K.macd_cl}">${K.macd_v}</div></div><div class="kpi-s">vs Signal</div></div>
+  `;
+}
+
+// ============================================================
+// RSI / MACD / ATR / VZ / FG
+// ============================================================
+function rRSI(n){
+  const s = D.rsi; if (!s.d.length) return;
+  const i = Math.max(0, s.d.length - n);
+  Plotly.newPlot('c-rsi', [{
+    x:md(s.d.slice(i)), y:s.v.slice(i),
+    type:'scatter', mode:'lines',
+    line:{color:COL.purple, width:1.8},
+  }], {
+    ...LAY, height:280,
+    yaxis:{...LAY.yaxis, range:[0,100]},
+    shapes:[
+      {type:'rect', y0:70, y1:100, x0:0, x1:1, xref:'paper', fillcolor:'rgba(255,90,95,.04)', line:{width:0}},
+      {type:'rect', y0:0, y1:30, x0:0, x1:1, xref:'paper', fillcolor:'rgba(0,208,132,.04)', line:{width:0}},
+      {type:'line', y0:70, y1:70, x0:0, x1:1, xref:'paper', line:{dash:'dash',color:COL.red,width:.8}},
+      {type:'line', y0:30, y1:30, x0:0, x1:1, xref:'paper', line:{dash:'dash',color:COL.green,width:.8}},
+    ],
+  }, CFG);
+}
+
+function rMACD(n){
+  const s = D.macd; if (!s.d.length) return;
+  const i = Math.max(0, s.d.length - n);
+  const h = s.mh.slice(i);
+  Plotly.newPlot('c-macd', [
+    {x:md(s.d.slice(i)), y:h, type:'bar', marker:{color: h.map(v => v>=0 ? 'rgba(0,208,132,.5)' : 'rgba(255,90,95,.5)')}, name:'Hist'},
+    {x:md(s.d.slice(i)), y:s.ml.slice(i), type:'scatter', mode:'lines', name:'MACD', line:{color:COL.blue, width:1.8}},
+    {x:md(s.d.slice(i)), y:s.ms.slice(i), type:'scatter', mode:'lines', name:'Signal', line:{color:COL.coral, width:1.2, dash:'dot'}},
+  ], {...LAY, height:280}, CFG);
+}
+
+function rVZ(n){
+  const s = D.vz; if (!s.d.length) return;
+  const i = Math.max(0, s.d.length - n);
+  const v = s.v.slice(i);
+  Plotly.newPlot('c-vz', [{
+    x:md(s.d.slice(i)), y:v, type:'bar',
+    marker:{color: v.map(x => x>=0 ? 'rgba(91,141,239,.5)' : 'rgba(90,95,116,.35)')},
+  }], {
+    ...LAY, height:280,
+    shapes:[
+      {type:'line', y0:2, y1:2, x0:0, x1:1, xref:'paper', line:{dash:'dash',color:COL.red,width:.8}},
+      {type:'line', y0:0, y1:0, x0:0, x1:1, xref:'paper', line:{color:'#262B3E',width:1}},
+    ],
+  }, CFG);
+}
+
+function rFG(){
+  const s = D.fg; if (!s.d.length) return;
+  const c = s.v.map(v => v <= 25 ? COL.red : v <= 45 ? COL.coral : v <= 55 ? COL.amber : v <= 75 ? COL.green : COL.teal);
+  Plotly.newPlot('c-fg', [{
+    x:md(s.d), y:s.v, type:'bar', marker:{color:c},
+  }], {
+    ...LAY, height:290,
+    yaxis:{...LAY.yaxis, range:[0,100]},
+    shapes:[
+      {type:'line', y0:25, y1:25, x0:0, x1:1, xref:'paper', line:{dash:'dash',color:COL.red,width:.7}},
+      {type:'line', y0:75, y1:75, x0:0, x1:1, xref:'paper', line:{dash:'dash',color:COL.green,width:.7}},
+    ],
+  }, CFG);
+}
+
+// ============================================================
+// SWITCH PERIODOS UNIFICADO
+// ============================================================
+function sp(k, n, btn){
+  btn.parentElement.querySelectorAll('.pb').forEach(x => x.classList.remove('on'));
+  btn.classList.add('on');
+  switch(k){
+    case 'btc': rBTC(n); break;
+    case 'eth': rL('c-eth','eth',n,300,COL.purple); break;
+    case 'tfg': rTFG(n); break;
+    case 'idx': rIdx(n); break;
+    case 'dxy': rL('c-dxy','dxy',n,290,COL.blue); break;
+    case 'oro': rL('c-oro','oro',n,290,COL.amber); break;
+    case 'bon': rL('c-bon','bonos',n,290,COL.teal); break;
+    case 'wti': rL('c-wti','wti',n,290,COL.coral); break;
+    case 'vix': rL('c-vix','vix',n,290,COL.red); break;
+    case 'vix2': rL('c-vix2','vix',n,290,COL.red); break;
+    case 'rsi': rRSI(n); break;
+    case 'macd': rMACD(n); break;
+    case 'atr': rL('c-atr','atr',n,280,COL.amber); break;
+    case 'vz': rVZ(n); break;
+  }
+}
+
+// ============================================================
+// WATCHLIST unificada con favoritos + busqueda + filtros
+// ============================================================
+let wFilter = 'all';
+let wFavs = new Set();
+
+function loadFavs(){
+  try {
+    const raw = localStorage.getItem('tfg_favs');
+    if (raw) wFavs = new Set(JSON.parse(raw));
+  } catch(e) {}
+}
+function saveFavs(){
+  try { localStorage.setItem('tfg_favs', JSON.stringify([...wFavs])); } catch(e) {}
+}
+
+function wFil(f, btn){
+  wFilter = f;
+  btn.parentElement.querySelectorAll('.pb').forEach(x => x.classList.remove('on'));
+  btn.classList.add('on');
+  wRender();
+}
+
+function allStocks(){
+  return [...(D.stk_us||[]), ...(D.stk_eu||[]), ...(D.stk_es||[])];
+}
+
+function wRender(){
+  const q = (document.getElementById('wSearch').value || '').toLowerCase();
+  let rows = allStocks();
+  if (wFilter === 'fav') rows = rows.filter(s => wFavs.has(s.n));
+  else if (wFilter !== 'all') rows = rows.filter(s => s.reg === wFilter);
+  if (q) rows = rows.filter(s => s.n.toLowerCase().includes(q));
+
+  const tb = document.querySelector('#t-watch tbody');
+  tb.innerHTML = rows.map((s, i) => {
+    const isFav = wFavs.has(s.n);
+    const initials = s.n.substring(0, 2).toUpperCase();
+    const sparkId = `sp-w-${i}`;
+    return `
+      <tr data-n="${s.n}" data-reg="${s.reg}" onclick="sdO('${s.n}')">
+        <td><button class="star ${isFav ? 'on' : ''}" onclick="event.stopPropagation();wFav('${s.n}',this)">&#9733;</button></td>
+        <td>
+          <div class="st-name">
+            <div class="st-avatar">${initials}</div>
+            <div class="st-n-txt">
+              <b>${s.n}</b>
+              <span>${s.reg.toUpperCase()}</span>
+            </div>
+          </div>
+        </td>
+        <td>${s.p}</td>
+        <td class="${s.d1>=0?'up':'down'}">${pctFmt(s.d1)}</td>
+        <td class="${s.d5>=0?'up':'down'}">${pctFmt(s.d5)}</td>
+        <td class="${s.d30>=0?'up':'down'}">${pctFmt(s.d30)}</td>
+        <td><svg class="st-spark" viewBox="0 0 70 26" id="${sparkId}"></svg></td>
+      </tr>`;
+  }).join('');
+
+  rows.forEach((s, i) => drawSparkCompact(`sp-w-${i}`, s.spark, s.d30 >= 0 ? COL.green : COL.red));
+}
+
+function drawSparkCompact(id, data, color){
+  const svg = document.getElementById(id);
+  if (!svg || !data || data.length < 2) return;
+  const w = 70, h = 26;
+  const clean = data.filter(v => v !== null);
+  if (clean.length < 2) return;
+  const min = Math.min(...clean), max = Math.max(...clean);
+  const rng = max - min || 1;
+  const step = w / (data.length - 1);
+  const pts = data.map((v, i) => v === null ? null : [i * step, h - ((v - min) / rng) * (h - 4) - 2]).filter(p => p);
+  const d = 'M ' + pts.map(p => p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L ');
+  svg.innerHTML = `<path d="${d}" fill="none" stroke="${color}" stroke-width="1.4" stroke-linejoin="round"/>`;
+}
+
+function wFav(n, btn){
+  if (wFavs.has(n)) { wFavs.delete(n); btn.classList.remove('on'); }
+  else { wFavs.add(n); btn.classList.add('on'); }
+  saveFavs();
+  if (wFilter === 'fav') wRender();
+}
+
+// ============================================================
+// STOCK DETAIL
+// ============================================================
+let curS = null;
+function sdO(n){
+  const s = allStocks().find(x => x.n === n);
+  if (!s) return;
+  curS = s;
+  document.getElementById('sd-n').textContent = s.n;
+  document.getElementById('sd-p').textContent = s.p;
+  const ch = document.getElementById('sd-c');
+  ch.textContent = pctFmt(s.d1);
+  ch.className = 'tk-c ' + (s.d1 >= 0 ? 'up' : 'down');
+
+  document.querySelectorAll('#pbs-sd .pb').forEach((b, i) => b.classList.toggle('on', i === 1));
+  document.querySelectorAll('#t-watch tbody tr').forEach(r => r.classList.toggle('sel', r.dataset.n === n));
+
+  sdR(30);
+  const el = document.getElementById('sd');
+  el.classList.add('vis');
+  el.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function sdX(){
+  document.getElementById('sd').classList.remove('vis');
+  document.querySelectorAll('#t-watch tbody tr').forEach(r => r.classList.remove('sel'));
+  curS = null;
+}
+
+function sdp(d, btn){
+  btn.parentElement.querySelectorAll('.pb').forEach(x => x.classList.remove('on'));
+  btn.classList.add('on');
+  sdR(d);
+}
+
+function sdR(d){
+  if (!curS) return;
+  const ln = curS.line;
+  const i = Math.max(0, ln.d.length - d);
+  nL('c-sd', ln.d.slice(i), ln.v.slice(i), 320, curS.d1 >= 0 ? COL.green : COL.red);
+}
+
+// ============================================================
+// HERO y TEXTO REGIMEN
+// ============================================================
+function hydrateHero(){
+  const btc = D.btc;
+  if (btc.d.length > 24) {
+    const last24h = btc.h.slice(-24);
+    const lo24h = btc.l.slice(-24);
+    const hi = Math.max(...last24h.filter(v=>v!==null));
+    const lo = Math.min(...lo24h.filter(v=>v!==null));
+    document.getElementById('h-rng').textContent = fmtUSD(lo) + ' / ' + fmtUSD(hi);
+  }
+  document.getElementById('h-vol').textContent = K.btc_vol || '—';
+
+  // VIX KPI sentimiento
+  const kvix = document.getElementById('k-vix');
+  if (kvix && K.m_vix_p) kvix.textContent = K.m_vix_p;
+
+  // Regimen: badge + descripcion
+  const reg = K.reg_actual;
+  const badge = document.getElementById('reg-badge');
+  const desc = document.getElementById('reg-desc');
+  const descs = {
+    'BULL':'Tendencia alcista sostenida. Los retornos acumulados son positivos por encima del rango tipico de ruido.',
+    'BEAR':'Tendencia bajista sostenida. Los retornos acumulados estan significativamente por debajo de la media.',
+    'SIDEWAYS':'Mercado lateral. Los retornos acumulados se mantienen dentro del rango de ruido, sin tendencia clara.',
+  };
+  if (badge) {
+    badge.className = 'reg-badge reg-' + (reg === 'BULL' ? 'bull' : reg === 'BEAR' ? 'bear' : 'side');
+    badge.textContent = reg;
+  }
+  if (desc) desc.textContent = descs[reg] || '—';
+}
+
+// ============================================================
+// AUTO-REFRESH (timer visual)
+// ============================================================
+function startRefreshTimer(){
+  const el = document.getElementById('refresh-timer');
+  if (!el) return;
+  const generated = PAYLOAD.meta.generated_at;
+  setInterval(() => {
+    // Simple: mostramos la hora de generacion (estatica, recargara el push de Actions)
+    el.textContent = 'Actualizado ' + generated;
+  }, 30000);
+  // Ademas: si la pestana vuelve a foco y han pasado >10 min desde generacion, sugerimos recarga
+  let lastHidden = null;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) lastHidden = Date.now();
+    else if (lastHidden && (Date.now() - lastHidden) > 10 * 60 * 1000) {
+      location.reload();
+    }
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init(){
+  loadFavs();
+  cmpInit();
+  hydrateHero();
+  renderKpiMacro();
+  renderKpiIdx();
+  renderKpiTech();
+  wRender();
+  startRefreshTimer();
+
+  // Render inicial de graficas visibles
+  rBTC(2160);
+  rL('c-eth','eth',720,300,COL.purple);
+  const cr = D.corr;
+  if (cr.d.length) nL('c-corr', cr.d.slice(-720), cr.v.slice(-720), 300, COL.teal);
+
+  rL('c-dxy','dxy',90,290,COL.blue);
+  rL('c-oro','oro',90,290,COL.amber);
+  rL('c-bon','bonos',90,290,COL.teal);
+  rL('c-wti','wti',90,290,COL.coral);
+  rL('c-vix','vix',90,290,COL.red);
+  rL('c-vix2','vix',90,290,COL.red);
+
+  rIdx(180);
+  rTFG(2160);
+  rVolPct(2160);
+  rRSI(720);
+  rMACD(720);
+  rL('c-atr','atr',720,280,COL.amber);
+  rVZ(720);
+  rFG();
+}
+
+// Ajuste pequeno: sustituir __REG_CLASS__ en el DOM (Python no lo sabe)
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>
